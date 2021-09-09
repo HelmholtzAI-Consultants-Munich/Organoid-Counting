@@ -2,7 +2,7 @@ import os
 import napari
 import argparse
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import matplotlib.pyplot as plt
 import skimage
 import skimage.feature
@@ -10,7 +10,7 @@ import skimage.viewer
 from skimage.measure import regionprops,label
 from scipy import ndimage as ndi
 from skimage.morphology import opening,remove_small_objects,closing,dilation,erosion
-from CellCounter import get_binary_map,apply_opening,find_median_cell_size,apply_watershed
+#from CellCounter import get_binary_map,apply_opening,find_median_cell_size,apply_watershed
 
 def get_args():
     parser = argparse.ArgumentParser(description='Organoid counter')
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         image_list = np.array(image_list)
         
         res = label(res)
-        median_size = find_median_cell_size(res)
+        #median_size = find_median_cell_size(res)
         # viewer
         points = [] 
         colors = []
