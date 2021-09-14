@@ -69,12 +69,14 @@ if __name__ == '__main__':
             res = res | filled
         
 #         res = remove_small_objects(res,40)
-        image_list.append(np.mean(image_list,axis=0))
-        seg.append(res)
+#         image_list.append(np.mean(image_list,axis=0))
+        average_image = np.mean(image_list,axis=0)
+#         seg.append(res)
         seg = np.array(seg)
         image_list = np.array(image_list)
         
         res = label(res)
+        max_label = max(np.unique(res))
         #median_size = find_median_cell_size(res)
         # viewer
         points = [] 
@@ -98,14 +100,11 @@ if __name__ == '__main__':
             colors.append('red')
             points.append([y,x])
 
-        points=np.array(points)
+#         points=np.array(points)
         point_properties={
             'point_colors': np.array(colors),
             'diameter': diameter
         }
-#         properties = {
-#         'diameter': diameter,
-#         }
         text_properties = {
             'text': '{diameter}',
             'anchor': 'upper_left',
@@ -122,7 +121,9 @@ if __name__ == '__main__':
         with napari.gui_qt():
             viewer = napari.Viewer()
             img_layer = viewer.add_image(image_list, name='image')
-            seg_layer = viewer.add_labels(label(seg), name='segmentation')
+            seg_layer = viewer.add_image(seg, name='segmentation',blending='additive',colormap='cyan')
+            avgimg_layer = viewer.add_image(average_image, name='Average image')
+            final_layer = viewer.add_labels(res, name='Final segmentation')
 #             seg_layer = viewer.add_image(seg, name='segmentation',blending='additive',colormap='cyan')
 #                     viewer = napari.view_image(img, name='image')
 #             if len(bboxes)>0:
@@ -134,7 +135,7 @@ if __name__ == '__main__':
 #                                         text=text_properties,
 #                                         edge_width=3)
             if len(points)>0:
-                points_layer = viewer.add_points(points,
+                points_layer = viewer.add_points(np.array(points),
                                         text=text_properties,
                                         properties=point_properties,
                                         face_color='point_colors',
@@ -143,13 +144,39 @@ if __name__ == '__main__':
 
             @viewer.bind_key('d') # denote done
             def update_cell_numbers(viewer):
-                num_cells = viewer.layers['points'].data.shape[0]
-                print('Number of organoids after manual correction: ', num_cells)
-                result[-1].append(num_cells)
-                viewer.close()
+                new_points = []
+                new_diameter = []
+                new_colors = []
+                for region in regionprops(viewer.layers['Final segmentation'].data):      
+                    
+                    y,x = region.centroid
+                    new_points.append([y,x])
+                    minr, minc, maxr, maxc = region.bbox
+                    new_diameter.append(np.around(0.5*(maxr+maxc-minc-minr),2))
+                    new_colors.append('red')
+                        
+                new_properties={
+                    'point_colors': np.array(new_colors),
+                    'diameter': new_diameter
+                }
+                
+#                 points_layer.add(new_points)
+#                 points_layer.properties=new_properties
+                viewer.layers.pop(4)
+                points_layer = viewer.add_points(np.array(new_points),
+                        text=text_properties,
+                        properties=new_properties,
+                        face_color='point_colors',
+                        size=5,
+                        name='points')
+                
+#                 num_cells = viewer.layers['points'].data.shape[0]
+#                 print('Number of organoids after manual correction: ', num_cells)
+#                 result[-1].append(num_cells)
+#                 viewer.close()
     
-        if len(result[-1]) == 2:
-            result[-1].append(None)
+#         if len(result[-1]) == 2:
+#             result[-1].append(None)
             
 #     df = pd.DataFrame(result, columns =['Name', 'Automatic Cell Number','Corrected Cell Number']) 
 #     df.to_excel('result.xlsx')
