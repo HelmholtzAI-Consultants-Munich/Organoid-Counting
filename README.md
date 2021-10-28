@@ -10,3 +10,7 @@ In Final segmentation layer, if you want to add an organoid, you could choose pa
 ```
 python viewer.py --image example_data/well00.jpg
 ```
+
+## Installation
+
+This software has been tested with Python 3.9. Simple run ```pip install -r requirements.txt``` in your environment to install the necessary packages.
