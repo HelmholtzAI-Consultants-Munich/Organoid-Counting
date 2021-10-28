@@ -13,7 +13,8 @@ from skimage.morphology import opening,remove_small_objects,closing,dilation,ero
 from skimage.transform import resize
 import czifile
 import json
-
+import warnings
+warnings.filterwarnings("ignore")
 
 def get_args():
     parser = argparse.ArgumentParser(description='Organoid counter')
@@ -194,7 +195,7 @@ if __name__ == '__main__':
             points_layer = viewer.add_points([], name='Organoid Centroids', face_color='#00aa7f', size=100)
             raw_filename = image_file.split('/')[-1].split('.')[0]
             output_path = os.path.join(args.output, raw_filename+'.json')
-            @viewer.bind_key('r') # denote done
+            @viewer.bind_key('s') # denote save
             def store_centroids(viewer):
                 points = viewer.layers['Organoid Centroids'].data # returns numpy array
                 data = {'x': list(points[:,0]), 'y':list(points[:,1])}
