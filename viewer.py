@@ -4,11 +4,9 @@ import argparse
 import numpy as np
 #import pandas as pd
 import matplotlib.pyplot as plt
-import skimage
-import skimage.feature
-import skimage.viewer
-from skimage.measure import regionprops,label
 from scipy import ndimage as ndi
+from skimage.feature import canny
+from skimage.measure import regionprops,label
 from skimage.morphology import opening,remove_small_objects,closing,dilation,erosion
 from skimage.transform import resize
 import czifile
@@ -65,7 +63,7 @@ def apply_morphologies(img):
     
     #img = ((image-image.min())/(image.max()-image.min())*255).astype(np.uint16)
     mask = np.where(img<20,False,True)
-    edges = skimage.feature.canny(
+    edges = canny(
                     image=img,
                     sigma=3,
                     low_threshold=10,

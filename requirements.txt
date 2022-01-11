@@ -1,2 +1,4 @@
 napari[all]==0.4.12 
 czifile==2019.7.2
+matplotlib==3.4.3
+scikit-image==0.18.3
