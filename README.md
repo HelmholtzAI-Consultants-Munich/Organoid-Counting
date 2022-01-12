@@ -1,9 +1,5 @@
 # Organoid_Counting
 
-## Installation through command line
-
-This software has been tested with Python 3.9. Simple run ```pip install -r requirements.txt``` in your environment to install the necessary packages.
-
 ## Full installation description for Windows
 
 For windows users you will need to first install Python (simply go to the app store and install the latest version of Python). Next double click on the ```setup.bat``` file which will install all necessary packages for you to run the software. In order to run the software you have two options:
@@ -16,6 +12,11 @@ To annotate organoids on images from a Windows machine, place the images you wis
 
 ## Use for automatic organoid counting on Windows
 To use the automatic organoid counter option double click on the ```AutoOrganoidCounter.bat``` file. This will open the napari tool which shows the original image and the segmentation created, as well as the centroid points of the each segmented object.
+
+
+## Installation through command line
+
+This software has been tested with Python 3.9. Simple run ```pip install -r requirements.txt``` in your environment to install the necessary packages.
 
 ## Usage from command line:
 
