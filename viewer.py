@@ -99,6 +99,100 @@ if __name__ == '__main__':
 
     if args.auto_count==True: 
         result = []
+        for image_file in file_list:
+            img = czifile.imread(os.path.join(input_dir, image_file))
+            img = img[::10,::10]
+            filled = apply_morphologies(img)
+            segmentation = label(filled)
+            max_label = max(np.unique(segmentation))
+            points, point_properties, text_properties, _ = compute_diameter(segmentation)
+            print('Image name: ', image_file)
+            print('Image size: ', img.shape)
+            print('Number of organoids detected with automatic method: ', len(points))
+            result.append([image_file,len(points)])
+
+            def add_points(event):
+                updated_seg = viewer.layers['Segmentation'].data
+                new_points, new_properties, text_properties, _ = compute_diameter(updated_seg)
+                viewer.layers.pop(2)
+                points_layer = viewer.add_points(np.array(new_points),
+                        text=text_properties,
+                        properties=new_properties,
+                        face_color='point_colors',
+                        size=5,
+                        name='points')
+
+            viewer = napari.Viewer()
+            img_layer = viewer.add_image(img, name='Image')
+            seg_layer = viewer.add_image(segmentation, name='Segmentation',blending='additive',colormap='cyan')
+            seg_layer.events.set_data.connect(add_points) 
+
+            if len(points)>0:
+                points_layer = viewer.add_points(np.array(points),
+                                        text=text_properties,
+                                        properties=point_properties,
+                                        face_color='point_colors',
+                                        size=5,
+                                        name='points')
+            napari.run()
+
+            @viewer.bind_key('d') # denote done
+            def update_cell_numbers(viewer):
+                new_points = []
+                new_diameter = []
+                new_colors = []
+                for region in regionprops(viewer.layers['Segmentation'].data):      
+                    y,x = region.centroid
+                    new_points.append([y,x])
+                    minr, minc, maxr, maxc = region.bbox
+                    new_diameter.append(np.around(0.5*(maxr+maxc-minc-minr),2))
+                    new_colors.append('red')
+                        
+                new_properties={
+                    'point_colors': np.array(new_colors),
+                    'diameter': new_diameter
+                }
+                viewer.layers.pop(4)
+                points_layer = viewer.add_points(np.array(new_points),
+                        text=text_properties,
+                        properties=new_properties,
+                        face_color='point_colors',
+                        size=5,
+                        name='points')
+            @viewer.bind_key('e')
+            def close_viewer(): viewer.close()
+        
+    else:
+        if not os.path.isdir(args.output):
+            os.makedirs(args.output)
+        for image_file in file_list:
+            img = czifile.imread(os.path.join(input_dir, image_file))
+            #img = np.squeeze(img)
+            #img_shape = img.shape
+            #slice_index = np.argmin(img_shape)
+            #img_mip = np.max(img, axis=slice_index)
+            viewer = napari.Viewer()
+            image = viewer.add_image(img, name='stack')
+            #image = viewer.add_image(img_mip, name='MIP')
+            points_layer = viewer.add_points([], name='Organoid Centroids', face_color='#00aa7f', size=100)
+            raw_filename = image_file.split('.')[0]
+            output_path = os.path.join(args.output, raw_filename+'.json')
+            @viewer.bind_key('s') # denote save
+            def store_centroids(viewer):
+                points = viewer.layers['Organoid Centroids'].data # returns numpy array
+                data = {'x': list(points[:,0]), 'y':list(points[:,1])}
+                #write to json
+                with open(output_path, 'w') as outfile:
+                    json.dump(data, outfile)
+                viewer.close()
+            napari.run()
+            
+
+
+'''
+# Ruolin's implementation on the stack
+
+result = []
         # image process
         for image in file_list:
             res = np.zeros((520,520)).astype(bool)
@@ -180,29 +274,5 @@ if __name__ == '__main__':
             @viewer.bind_key('e')
             def close_viewer(): viewer.close()
 
-    else:
-        if not os.path.isdir(args.output):
-            os.makedirs(args.output)
-        for image_file in file_list:
-            img = czifile.imread(os.path.join(input_dir, image_file))
-            img = np.squeeze(img)
-            img_shape = img.shape
-            slice_index = np.argmin(img_shape)
-            img_mip = np.max(img, axis=slice_index)
-            viewer = napari.Viewer()
-            image = viewer.add_image(img, name='stack')
-            image = viewer.add_image(img_mip, name='MIP')
-            points_layer = viewer.add_points([], name='Organoid Centroids', face_color='#00aa7f', size=100)
-            raw_filename = image_file.split('.')[0]
-            output_path = os.path.join(args.output, raw_filename+'.json')
-            @viewer.bind_key('s') # denote save
-            def store_centroids(viewer):
-                points = viewer.layers['Organoid Centroids'].data # returns numpy array
-                data = {'x': list(points[:,0]), 'y':list(points[:,1])}
-                #write to json
-                with open(output_path, 'w') as outfile:
-                    json.dump(data, outfile)
-                viewer.close()
-            napari.run()
-            
 
+'''
