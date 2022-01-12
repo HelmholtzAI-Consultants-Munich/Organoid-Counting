@@ -90,9 +90,11 @@ if __name__ == '__main__':
     args = get_args()
     
     if os.path.isdir(args.image):
+        input_dir = args.image
         file_list = os.listdir(args.image)
-        file_list = [os.path.join(args.image, file) for file in file_list if file.endswith('.czi')]
+        file_list = [file for file in file_list if file.endswith('.czi')]
     else:
+        input_dir = './'
         file_list = [args.image]
 
     if args.auto_count==True: 
@@ -104,7 +106,7 @@ if __name__ == '__main__':
             seg = []
             for zslice in range(8):
                 image_path = image.split('.')[0][:-1]+str(zslice)+'.jpg'
-                img = plt.imread(image_path)  
+                img = plt.imread(os.path.join(input_dir,image_path))  
                 img = img[::10,::10]
                 image_list.append(img)
                 filled = apply_morphologies(img)
@@ -182,7 +184,7 @@ if __name__ == '__main__':
         if not os.path.isdir(args.output):
             os.makedirs(args.output)
         for image_file in file_list:
-            img = czifile.imread(image_file)
+            img = czifile.imread(os.path.join(input_dir, image_file))
             img = np.squeeze(img)
             img_shape = img.shape
             slice_index = np.argmin(img_shape)
@@ -191,7 +193,7 @@ if __name__ == '__main__':
             image = viewer.add_image(img, name='stack')
             image = viewer.add_image(img_mip, name='MIP')
             points_layer = viewer.add_points([], name='Organoid Centroids', face_color='#00aa7f', size=100)
-            raw_filename = image_file.split('/')[-1].split('.')[0]
+            raw_filename = image_file.split('.')[0]
             output_path = os.path.join(args.output, raw_filename+'.json')
             @viewer.bind_key('s') # denote save
             def store_centroids(viewer):
@@ -202,4 +204,5 @@ if __name__ == '__main__':
                     json.dump(data, outfile)
                 viewer.close()
             napari.run()
+            
 
