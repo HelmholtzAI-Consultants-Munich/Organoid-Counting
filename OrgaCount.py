@@ -40,16 +40,16 @@ def apply_normalization(img):
     return img_norm
 
 class OrgaCount():
-    def __init__(self, root_path, img_path, downsampling_size):
+    def __init__(self, root_path, img_path, downsampling_size=4, sigma=3, low_threshold=10, high_threshold=25):
         img_czi = AICSImage(os.path.join(root_path, img_path))
-        self.downsampling_size = downsampling_size
         self.img_resX_orig = img_czi.physical_pixel_sizes.X # in micrometers
         self.img_resY_orig = img_czi.physical_pixel_sizes.Y
         self.img_original = np.squeeze(img_czi.data)
         print('Opened image: ', img_path, 'with shape: ', self.img_original.shape)
-        self.sigma = 3
-        self.low_threshold = 10
-        self.high_threshold = 25
+        self.downsampling_size = downsampling_size
+        self.sigma = sigma
+        self.low_threshold = low_threshold
+        self.high_threshold = high_threshold
         self.background_intensity = 40
         self.min_radius_um = 15 # min diameter defined by collaborators as d=30 micrometers. Min area A=pi*r^2
         self.img = block_reduce(self.img_original, block_size=(self.downsampling_size, self.downsampling_size), func=np.mean)

@@ -13,14 +13,17 @@ from OrgaCount import *
 def get_args():
     parser = argparse.ArgumentParser(description='Organoid counter')
     parser.add_argument('--image', default=False)
-    parser.add_argument('--save-screenshot', action='store_true')
     parser.add_argument('--auto-count', default=True)
+    parser.add_argument('--save-screenshot', action='store_true')
     parser.add_argument('--output', default='annotations')
+    parser.add_argument('--downsample', default=4, type=int)
+    parser.add_argument('--sigma', default=3, type=int)
+    parser.add_argument('--low-threshold', default=10, type=int)
+    parser.add_argument('--high-threshold', default=25, type=int)
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = get_args()
-    downsampling_size = 4
     if os.path.isdir(args.image):
         input_dir = args.image
         file_list = os.listdir(args.image)
@@ -66,7 +69,7 @@ if __name__ == '__main__':
 
         raw_filename = image_file.split('.')[0]
         output_path = os.path.join(args.output, raw_filename+'.json')
-        orga_count = OrgaCount(input_dir, image_file, downsampling_size)
+        orga_count = OrgaCount(input_dir, image_file, args.downsample, args.sigma, args.low_threshold, args.high_threshold)
         
         viewer = napari.Viewer()
         img_layer = viewer.add_image(orga_count.img, name='Image', colormap='gray')
