@@ -13,6 +13,8 @@ To annotate organoids on images from a Windows machine, place the images you wis
 ## Use for automatic organoid counting on Windows
 To use the automatic organoid counter option double click on the ```AutoOrganoidCounter.bat``` file. This will open the napari tool which shows the original image and the bounding boxed of the already detected organoids. Wrongly detected objects can be removed by first selecting them (arrow button) and then clicking the backspace key on your keyboard, new bounding boxes can be added on organoids that were missed by selecting the rectanlge button, and existing boxes can be corrected by clicking on them and resizing them from the corners.
 
+![image](https://github.com/HelmholtzAI-Consultants-Munich/Organoid_Counting/blob/dev/readme_imgs/gui_example.png)
+
 ### Available parameters
 On the top right window the user has the option to adapt several of the parameters that are used for the automatic organoid detection. 
 
@@ -35,7 +37,7 @@ To run this software, open a terminal and type:
 ```
 python viewer.py --image example_data/well00.jpg
 ```
-This will launch napari where you can view and edit the segmentation and original image. In the segmentation layer, if you want to add, edit or remove an organoid, you can use the layer controls window. See above for more details. The following arguments are availabel to the user:
+This will launch napari where you can view and edit the segmentation and original image. In the segmentation layer, if you want to add, edit or remove an organoid, you can use the layer controls window. See ![above](## Use for automatic organoid counting on Windows) for more details. The following arguments are availabel to the user:
 
 * ```--auto_counter --> default=False```: whether to apply the automatic detection algorithm(True) or run the simple annotation tool(False)
 * ```--save-screenshot```: Add this parameter when you wnat to save a screenshot of the napari window result
