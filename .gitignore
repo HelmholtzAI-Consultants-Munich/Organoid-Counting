@@ -1,4 +1,7 @@
+example_data/
+__pycache__/
 .DS_Store
 images/
 annotations/
+test.ipynb
 .ipynb_checkpoints/
