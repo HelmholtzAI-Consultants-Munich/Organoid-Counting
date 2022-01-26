@@ -18,10 +18,10 @@ To use the automatic organoid counter option double click on the ```AutoOrganoid
 ### Available parameters
 On the top right window the user has the option to adapt several of the parameters that are used for the automatic organoid detection. 
 
-* **sigma:** default=3
-* **downsample:** default=4
-* **low_threshold:** default=10
-* **high_threshold:** default=25
+* **downsample:** default=4 -> The downsamplign applied to the original image - this affects the outcome of the method 
+* **sigma:** default=3 -> The sigma, standard deviation used for the Gaussian filter of the Canny edge detection algorithm. See ![here](https://scikit-image.org/docs/dev/auto_examples/edges/plot_canny.html) for more details.
+* **low_threshold:** default=10 -> The lower bound for hysteresis thresholding of the Canny edge detection algorithm. See ![here](https://scikit-image.org/docs/dev/auto_examples/edges/plot_canny.html) for more details.
+* **high_threshold:** default=25 -> The upper bound for hysteresis thresholding of the Canny edge detection algorithm. See ![here](https://scikit-image.org/docs/dev/auto_examples/edges/plot_canny.html) for more details.
 
 ## Installation through command line
 
@@ -37,7 +37,9 @@ To run this software, open a terminal and type:
 ```
 python viewer.py --image example_data/
 ```
-This will launch napari where you can view and edit the segmentation and original images in the folder example_data sequentially. In the segmentation layer, if you want to add, edit or remove an organoid, you can use the layer controls window. See ![above](## Use for automatic organoid counting on Windows) for more details. The following arguments are availabel to the user:
+This will launch napari where you can view and edit the segmentation and original images in the folder example_data sequentially. In the segmentation layer, if you want to add, edit or remove an organoid, you can use the layer controls window. See ![above](## Use for automatic organoid counting on Windows) for more details. 
+
+**Optional arguments**
 
 * ```--auto_counter --> default=False```: whether to apply the automatic detection algorithm(True) or run the simple annotation tool(False)
 * ```--save-screenshot```: Add this parameter when you wnat to save a screenshot of the napari window result
