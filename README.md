@@ -2,7 +2,7 @@
 
 ## Full installation description for Windows
 
-For windows users you will need to first install Python (simply go to the app store and install the latest version of Python). Next double click on the ```setup.bat``` file which will install all necessary packages for you to run the software. In order to run the software you have two options:
+For windows users you will need to first install Python (simply go to the Microsoft Store and install Python 3.9). Next double click on the ```setup.bat``` file which will install all necessary packages for you to run the software. In order to run the software you have two options:
  
  * Simple annotation tool with no automation (see below)
  * Automatic Organoid Counter with option for correction (see Use for automatic organoid counting on Windows)
