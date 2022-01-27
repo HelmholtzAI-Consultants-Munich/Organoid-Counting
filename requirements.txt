@@ -1,5 +1,4 @@
 magicgui[pyqt5]==0.3.4
 napari[all]==0.4.12 
 scikit-image==0.18.3
-aicsimageio==4.5.2
-aicsimageio[czi]==3.0.4
+aicsimageio[czi]==4.5.2
