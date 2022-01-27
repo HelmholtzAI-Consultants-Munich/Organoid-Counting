@@ -43,7 +43,7 @@ This will launch napari where you can view and edit the segmentation and origina
 
 * ```--auto_counter --> default=False```: whether to apply the automatic detection algorithm(True) or run the simple annotation tool(False)
 * ```--save-screenshot```: Add this parameter when you wnat to save a screenshot of the napari window result
-* ```--output --> default='annotations'```: the directory in which to store the JSON annotation files. If nothing is specified a folder named annotations will be created within the working directory and the JSON files will have the same names as the input images
+* ```--output --> default='annotations'```: the directory in which to store the JSON annotation files and screenshots (if specified). If nothing is specified a folder named annotations will be created within the working directory and the JSON files will have the same names as the input images
 * ```--downsample --> default=4```: see above
 * ```--sigma --> default=3```: see above
 * ```--low-threshold --> default=10```: see above
