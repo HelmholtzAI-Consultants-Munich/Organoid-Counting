@@ -3,12 +3,13 @@ import argparse
 import warnings
 warnings.filterwarnings("ignore")
 import json
+from skimage.io import imsave
 import napari
 from magicgui import magicgui
 from typing import List
 import numpy as np
-from PIL import Image
 from OrgaCount import *
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='Organoid counter')
@@ -32,7 +33,6 @@ if __name__ == '__main__':
         input_dir = './'
         file_list = [args.image]
 
-    output_dir = '/Users/christina.bukas/Documents/AI_projects/datasets/organoid_counting/2022-01-17_HFibs_Organoids_EF_all_wells_trainingdata/results/CValgoRuolin'
     if not os.path.isdir(args.output):
         os.makedirs(args.output)
 
@@ -88,8 +88,7 @@ if __name__ == '__main__':
                                             edge_width=3) #30
             if args.save_screenshot:
                 screenshot=viewer.screenshot()
-                screenshot = Image.fromarray(screenshot)
-                screenshot.save(os.path.join(output_dir, raw_filename+'_screenshot.png'))
+                imsave(os.path.join(args.output, raw_filename+'_screenshot.png'), screenshot)
         else:
             shapes_layer = viewer.add_shapes(name='Organoids', face_color='transparent', edge_color='magenta', edge_width=3)
         viewer.window.add_dock_widget(update_seg_res)
