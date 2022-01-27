@@ -10,7 +10,6 @@ from typing import List
 import numpy as np
 from OrgaCount import *
 
-
 def get_args():
     parser = argparse.ArgumentParser(description='Organoid counter')
     parser.add_argument('--image', default=False)
@@ -42,8 +41,8 @@ if __name__ == '__main__':
         auto_call=True,         
         sigma={"widget_type": "Slider", "min": 1, "max": 10},
         downsampling={"widget_type": "Slider", "min": 1, "max": 10},
-        low_threshold={"widget_type": "Slider", "max": 255},
-        high_threshold={"widget_type": "Slider", "max": 255})
+        low_threshold={"widget_type": "Slider", "max": 100},
+        high_threshold={"widget_type": "Slider", "max": 100})
     
         def update_seg_res(sigma: int=3, downsampling: int=4, low_threshold: int=10, high_threshold: int=25) -> List[napari.types.LayerDataTuple]:
             orga_count.update_sigma(sigma)

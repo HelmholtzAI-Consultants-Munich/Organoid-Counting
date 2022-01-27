@@ -1,12 +1,12 @@
 import os
+import math
+import numpy as np
 from aicsimageio import AICSImage
-from skimage.measure import block_reduce
 from scipy import ndimage as ndi
+from skimage.measure import block_reduce
 from skimage.feature import canny
 from skimage.measure import regionprops,label
 from skimage.morphology import opening,remove_small_objects,closing,dilation,erosion
-import numpy as np
-import math
 
 def setup_bboxes(segmentation): 
     bboxes = []
@@ -62,7 +62,7 @@ class OrgaCount():
     
     def get_current_downsampling(self):
         return self.downsampling_size
-        
+
     def update_donwnsampling(self, new_size):
         self.downsampling_size = new_size
         self.update_resolutions()
