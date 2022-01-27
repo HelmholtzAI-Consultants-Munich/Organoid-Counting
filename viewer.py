@@ -101,6 +101,7 @@ if __name__ == '__main__':
             data = {} 
             bboxes = viewer.layers['Organoids'].data # returns numpy array
             for i, bbox in enumerate(bboxes):
+                bbox *= orga_count.get_current_downsampling()
                 data.update({str(i): [list(bboxit) for bboxit in bbox]})
             #write to json
             with open(output_path, 'w') as outfile:

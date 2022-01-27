@@ -59,7 +59,10 @@ class OrgaCount():
     def update_resolutions(self):
         self.img_resX = self.downsampling_size * self.img_resX_orig
         self.img_resY = self.downsampling_size * self.img_resY_orig
-
+    
+    def get_current_downsampling(self):
+        return self.downsampling_size
+        
     def update_donwnsampling(self, new_size):
         self.downsampling_size = new_size
         self.update_resolutions()
@@ -81,6 +84,7 @@ class OrgaCount():
     def apply_morphologies(self):
         # downsample 
         self.img = block_reduce(self.img_original, block_size=(self.downsampling_size, self.downsampling_size), func=np.mean)   
+        print('Image resampled to size: ', self.img.shape)
         self.update_resolutions()
         # normalise
         self.img = apply_normalization(self.img)
