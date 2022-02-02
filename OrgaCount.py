@@ -7,6 +7,8 @@ from skimage.measure import block_reduce
 from skimage.feature import canny
 from skimage.measure import regionprops,label
 from skimage.morphology import opening,remove_small_objects,closing,dilation,erosion
+from matplotlib import pyplot as plt
+from skimage.color import label2rgb
 
 def setup_bboxes(segmentation): 
     bboxes = []
@@ -80,7 +82,13 @@ class OrgaCount():
         min_area = circle_area(self.min_radius_um)
         min_area_pix = min_area / (self.img_resX * self.img_resY)
         return round(min_area_pix)
-
+    
+    def compute_real_values(self, d1, d2):
+        d1 = d1 * self.img_resX
+        d2 = d2 * self.img_resY
+        area = math.pi * d1 * d2
+        return d1, d2, area
+    
     def apply_morphologies(self):
         # downsample 
         self.img = block_reduce(self.img_original, block_size=(self.downsampling_size, self.downsampling_size), func=np.mean)   
