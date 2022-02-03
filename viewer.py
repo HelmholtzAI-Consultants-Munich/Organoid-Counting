@@ -105,7 +105,7 @@ if __name__ == '__main__':
             bboxes = viewer.layers['Organoids'].data # returns numpy array
             for i, bbox in enumerate(bboxes):
                 bbox *= orga_count.get_current_downsampling()
-                d1 = abs(bbox[0][0] - bbox[1][0])
+                d1 = abs(bbox[0][0] - bbox[2][0])
                 d2 = abs(bbox[0][1] - bbox[2][1])
                 d1, d2, area = orga_count.compute_real_values(d1,d2)
                 data_csv.append([i, round(d1,3), round(d2,3), round(area,3)])
