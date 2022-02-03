@@ -6,9 +6,24 @@ from scipy import ndimage as ndi
 from skimage.measure import block_reduce
 from skimage.feature import canny
 from skimage.measure import regionprops,label
-from skimage.morphology import opening,remove_small_objects,closing,dilation,erosion
-from matplotlib import pyplot as plt
-from skimage.color import label2rgb
+from skimage.morphology import remove_small_objects,erosion
+import cv2
+
+def add_text_to_img(img, organoid_number, downsampling):
+    thickness=2
+    if downsampling==1: 
+        fontSize = 6
+        thickness = 4
+    elif downsampling<4: fontSize = 3
+    else: fontSize = 2
+    img = cv2.putText(img, 
+        'Organoids: '+str(organoid_number), 
+        org=(round(img.shape[1]*0.05), round(img.shape[0]*0.1)),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=fontSize,
+        thickness=thickness,
+        color=(255))
+    return img
 
 def setup_bboxes(segmentation): 
     bboxes = []

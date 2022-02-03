@@ -51,19 +51,19 @@ if __name__ == '__main__':
             orga_count.update_low_threshold(low_threshold)
             orga_count.update_high_threshold(high_threshold)
             segmentation = orga_count.apply_morphologies()
-            #bbox_properties, text_parameters, bboxes = setup_bboxes(segmentation)
             _, _, bboxes = setup_bboxes(segmentation)
             print('Number of organoids detected with automatic method: ', len(bboxes))
             print('Sigma: ', sigma, ', Low threshold: ', low_threshold, ', High threshold: ', high_threshold, 'Downsampling: ', downsampling)
-            img_tuple = (orga_count.img, {'name': 'Image'}, 'image')
+            img = add_text_to_img(orga_count.img, len(bboxes), downsampling)
+            img_tuple = (img, {'name': 'Image'}, 'image')
             if len(bboxes) > 0:
+                if downsampling<3: edge_width=5
+                else: edge_width=3
                 bbox_tuple = (bboxes, {'name': 'Organoids', 
                                         'face_color': 'transparent',
                                         'edge_color': 'magenta',
-                                        #'properties': bbox_properties,
-                                        #'text': text_parameters,
                                         'shape_type': 'rectangle',
-                                        'edge_width': 3}, 'shapes')
+                                        'edge_width': edge_width}, 'shapes')
             else:
                 bbox_tuple = ([],{'name': 'Organoids', 'face_color': 'transparent', 'edge_color': 'magenta', 'edge_width': 3}, 'shapes')
             return [img_tuple, bbox_tuple]
@@ -75,21 +75,21 @@ if __name__ == '__main__':
         orga_count = OrgaCount(input_dir, image_file, args.downsample, args.sigma, args.low_threshold, args.high_threshold)
         
         viewer = napari.Viewer()
-        img_layer = viewer.add_image(orga_count.img, name='Image', colormap='gray')
+        img = orga_count.img
         if args.auto_count==True: 
             segmentation = orga_count.apply_morphologies()
             bbox_properties, text_parameters, bboxes = setup_bboxes(segmentation)#, median_cell_size)
             print('Number of organoids detected with automatic method: ', len(bboxes))
-            #seg_layer = viewer.add_labels(segmentation, name='Segmentation')
+            img = add_text_to_img(img, len(bboxes), orga_count.downsampling_size)
+            img_layer = viewer.add_image(img, name='Image', colormap='gray')
             shapes_layer = viewer.add_shapes(bboxes, 
                                             name='Organoids',
                                             face_color='transparent',  
                                             edge_color='magenta',
-                                            #properties=bbox_properties,
-                                            #text=text_parameters,
                                             shape_type='rectangle',
-                                            edge_width=3) #30
+                                            edge_width=3)
         else:
+            img_layer = viewer.add_image(img, name='Image', colormap='gray')    
             shapes_layer = viewer.add_shapes(name='Organoids', face_color='transparent', edge_color='magenta', edge_width=3)
         viewer.window.add_dock_widget(update_seg_res)
         # update the layer dropdown menu when the layer list changes
