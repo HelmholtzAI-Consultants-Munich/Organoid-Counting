@@ -13,7 +13,7 @@ To annotate organoids on images from a Windows machine, place the images you wis
 ## Use for automatic organoid counting on Windows
 Here too, in order to use the tool on organoid images from a Windows machine, place the images you wish to annotate in the folder named ```images``` within the current directory. To use the automatic organoid counter option double click on the ```AutoOrganoidCounter.bat``` file. This will open the napari tool which shows the original image and the bounding boxed of the already detected organoids. Wrongly detected objects can be removed by first selecting them (arrow button) and then clicking the backspace key on your keyboard, new bounding boxes can be added on organoids that were missed by selecting the rectanlge button, and existing boxes can be corrected by clicking on them and resizing them from the corners. Here also, once you are done you can press the ```s``` key on the keyboard to save the result of the annotation as a JSON file and parameters in a CSV file (d1,d2 and area) and open the next image.
 
-![image](https://github.com/HelmholtzAI-Consultants-Munich/Organoid_Counting/blob/dev/readme_imgs/gui_example.png)
+![image](https://github.com/HelmholtzAI-Consultants-Munich/Organoid_Counting/blob/dev/readme_imgs/example_gui.png)
 
 ### Available parameters
 On the top right window the user has the option to adapt several of the parameters that are used for the automatic organoid detection. 
