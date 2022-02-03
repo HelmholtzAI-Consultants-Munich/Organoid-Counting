@@ -40,14 +40,14 @@ if __name__ == '__main__':
 
         @magicgui(
         auto_call=True,         
-        sigma={"widget_type": "Slider", "min": 1, "max": 10},
         downsampling={"widget_type": "Slider", "min": 1, "max": 10},
+        sigma={"widget_type": "Slider", "min": 1, "max": 10},
         low_threshold={"widget_type": "Slider", "max": 100},
         high_threshold={"widget_type": "Slider", "max": 100})
     
-        def update_seg_res(sigma: int=3, downsampling: int=4, low_threshold: int=10, high_threshold: int=25) -> List[napari.types.LayerDataTuple]:
-            orga_count.update_sigma(sigma)
+        def update_seg_res(downsampling: int=4, sigma: int=3, low_threshold: int=10, high_threshold: int=25) -> List[napari.types.LayerDataTuple]:
             orga_count.update_donwnsampling(downsampling)
+            orga_count.update_sigma(sigma)
             orga_count.update_low_threshold(low_threshold)
             orga_count.update_high_threshold(high_threshold)
             segmentation = orga_count.apply_morphologies()
