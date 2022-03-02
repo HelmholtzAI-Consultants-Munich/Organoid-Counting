@@ -18,6 +18,7 @@ def get_args():
     parser.add_argument('--save-screenshot', action='store_true')
     parser.add_argument('--output', default='annotations')
     parser.add_argument('--downsample', default=4, type=int)
+    parser.add_argument('--min-diameter', default=30)
     parser.add_argument('--sigma', default=3, type=int)
     parser.add_argument('--low-threshold', default=10, type=int)
     parser.add_argument('--high-threshold', default=25, type=int)
@@ -41,19 +42,21 @@ if __name__ == '__main__':
         @magicgui(
         auto_call=True,         
         downsampling={"widget_type": "Slider", "min": 1, "max": 10},
-        sigma={"widget_type": "Slider", "min": 1, "max": 10},
-        low_threshold={"widget_type": "Slider", "max": 100},
-        high_threshold={"widget_type": "Slider", "max": 100})
+        min_diameter={"widget_type": "Slider", "min": 10, "max": 100},
+        sigma={"widget_type": "Slider", "min": 1, "max": 10})
+        #low_threshold={"widget_type": "Slider", "max": 100},
+        #high_threshold={"widget_type": "Slider", "max": 100})
     
-        def update_seg_res(downsampling: int=4, sigma: int=3, low_threshold: int=10, high_threshold: int=25) -> List[napari.types.LayerDataTuple]:
+        def update_seg_res(downsampling: int=4, min_diameter: int=30, sigma: int=3) -> List[napari.types.LayerDataTuple]: #, low_threshold: int=10, high_threshold: int=25
             orga_count.update_donwnsampling(downsampling)
+            orga_count.update_min_organoid_size(min_diameter)
             orga_count.update_sigma(sigma)
-            orga_count.update_low_threshold(low_threshold)
-            orga_count.update_high_threshold(high_threshold)
+            #orga_count.update_low_threshold(low_threshold)
+            #orga_count.update_high_threshold(high_threshold)
             segmentation = orga_count.apply_morphologies()
             _, _, bboxes = setup_bboxes(segmentation)
             print('Number of organoids detected with automatic method: ', len(bboxes))
-            print('Sigma: ', sigma, ', Low threshold: ', low_threshold, ', High threshold: ', high_threshold, 'Downsampling: ', downsampling)
+            print('Downsampling: ', downsampling, 'Minimum organoid diameter: ', min_diameter, ', Sigma: ', sigma) #', Low threshold: ', low_threshold, ', High threshold: ', high_threshold,
             img = add_text_to_img(orga_count.img, len(bboxes), downsampling)
             img_tuple = (img, {'name': 'Image'}, 'image')
             if len(bboxes) > 0:
@@ -72,7 +75,7 @@ if __name__ == '__main__':
         raw_filename = raw_filename.split('.')[0]
         output_path_json = os.path.join(args.output, raw_filename+'.json')
         output_path_csv = os.path.join(args.output, raw_filename+'.csv')
-        orga_count = OrgaCount(input_dir, image_file, args.downsample, args.sigma, args.low_threshold, args.high_threshold)
+        orga_count = OrgaCount(input_dir, image_file, args.downsample, args.min_diameter, args.sigma, args.low_threshold, args.high_threshold)
         
         viewer = napari.Viewer()
         img = orga_count.img
@@ -91,9 +94,10 @@ if __name__ == '__main__':
         else:
             img_layer = viewer.add_image(img, name='Image', colormap='gray')    
             shapes_layer = viewer.add_shapes(name='Organoids', face_color='transparent', edge_color='magenta', edge_width=3)
-        viewer.window.add_dock_widget(update_seg_res)
-        # update the layer dropdown menu when the layer list changes
-        viewer.layers.events.changed.connect(update_seg_res.reset_choices)
+        if args.auto_count==True: 
+            viewer.window.add_dock_widget(update_seg_res)
+            # update the layer dropdown menu when the layer list changes
+            viewer.layers.events.changed.connect(update_seg_res.reset_choices)
 
         @viewer.bind_key('s')
         def store_centroids(viewer):
@@ -104,14 +108,14 @@ if __name__ == '__main__':
             data_csv = []
             bboxes = viewer.layers['Organoids'].data # returns numpy array
             for i, bbox in enumerate(bboxes):
-                bbox *= orga_count.get_current_downsampling()
                 d1 = abs(bbox[0][0] - bbox[2][0])
                 d2 = abs(bbox[0][1] - bbox[2][1])
                 d1, d2, area = orga_count.compute_real_values(d1,d2)
                 data_csv.append([i, round(d1,3), round(d2,3), round(area,3)])
+                bbox *= orga_count.get_current_downsampling()
                 data_json.update({str(i): [list(bboxit) for bboxit in bbox]})
             #write to csv
-            df = pd.DataFrame(data_csv, columns =['OrganoidID', 'D1[mm]','D2[mm]', 'Area [mm^2]']) 
+            df = pd.DataFrame(data_csv, columns =['OrganoidID', 'D1[um]','D2[um]', 'Area [um^2]']) 
             df.to_csv(output_path_csv, index=False)
             #write to json
             with open(output_path_json, 'w') as outfile:
