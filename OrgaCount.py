@@ -9,11 +9,11 @@ from skimage.measure import regionprops,label
 from skimage.morphology import remove_small_objects,erosion
 import cv2
 
-def add_text_to_img(img, organoid_number, downsampling):
+def add_text_to_img(img, organoid_number, downsampling=1):
     thickness=2
     if downsampling==1: 
-        fontSize = 6
-        thickness = 4
+        fontSize = 10 #6
+        thickness = 12 #4
     elif downsampling<4: fontSize = 3
     else: fontSize = 2
     img = cv2.putText(img, 
@@ -62,6 +62,8 @@ class OrgaCount():
         self.img_resX_orig = img_czi.physical_pixel_sizes.X # in micrometers
         self.img_resY_orig = img_czi.physical_pixel_sizes.Y
         self.img_original = np.squeeze(img_czi.data)
+        self.img_original = self.img_original.astype(np.float64)
+        self.img_orig_norm = apply_normalization(self.img_original)
         print('Opened image: ', img_path, 'with shape: ', self.img_original.shape)
         self.downsampling_size = downsampling_size
         self.sigma = sigma
@@ -69,9 +71,6 @@ class OrgaCount():
         self.high_threshold = high_threshold
         self.background_intensity = 40
         self.min_radius_um = min_diameter_um//2 #15 # min diameter defined by collaborators as d=30 micrometers. Min area A=pi*r^2
-        self.img = block_reduce(self.img_original, block_size=(self.downsampling_size, self.downsampling_size), func=np.mean)
-        self.update_resolutions()
-        self.img = apply_normalization(self.img)
 
     def update_resolutions(self):
         self.img_resX = self.downsampling_size * self.img_resX_orig
@@ -101,9 +100,9 @@ class OrgaCount():
         min_area_pix = min_area / (self.img_resX * self.img_resY)
         return round(min_area_pix)
     
-    def compute_real_values(self, d1, d2):
-        d1 = d1 * self.img_resX
-        d2 = d2 * self.img_resY
+    def compute_real_values(self, d1, d2): # d1 and d2 are already in original resolution
+        d1 = d1 * self.img_resX_orig
+        d2 = d2 * self.img_resY_orig
         area = math.pi * d1 * d2
         return d1, d2, area
     
@@ -141,18 +140,18 @@ class OrgaCount():
         segmentation = label(filled)
         return segmentation
 
-    def find_median_cell_size(segmentation):
-        sizes=[]
-        for region in regionprops(segmentation):
-            shapes_areas = region.area
-            sizes.append(shapes_areas)
-        if len(sizes)!=0: avg_size = sum(sizes)/len(sizes)
-        else: avg_size = 0
-        return avg_size
-
+'''
+def find_median_cell_size(segmentation):
+    sizes=[]
+    for region in regionprops(segmentation):
+        shapes_areas = region.area
+        sizes.append(shapes_areas)
+    if len(sizes)!=0: avg_size = sum(sizes)/len(sizes)
+    else: avg_size = 0
+    return avg_size
 
 ## confirmed with png image ##
-'''         
+         
 img_jpg = Image.open('example_data/image001.png') #plt.imread('example_data/image001.png')
 #img_jpg  = Image.fromarray(img_jpg)
 img_jpg = img_jpg.convert('L')

@@ -6,6 +6,7 @@ import json
 from skimage.io import imsave
 import napari
 from magicgui import magicgui
+from napari.types import ShapesData, ImageData
 from typing import List
 import numpy as np
 import pandas as pd
@@ -38,6 +39,18 @@ if __name__ == '__main__':
         os.makedirs(args.output)
 
     for image_file in file_list:
+        
+        @magicgui(call_button="execute")
+        def update_display_text(bboxes: ShapesData) -> List[napari.types.LayerDataTuple]:
+            img = orga_count.img_orig_norm.copy()
+            img = add_text_to_img(img, len(bboxes)) #, downsampling)
+            img_tuple = (img, {'name': 'Image'}, 'image')
+            bbox_tuple = (bboxes, {'name': 'Organoids', 
+                        'face_color': 'transparent',
+                        'edge_color': 'magenta',
+                        'shape_type': 'rectangle',
+                        'edge_width': 12}, 'shapes')      
+            return [img_tuple, bbox_tuple]
 
         @magicgui(
         auto_call=True,         
@@ -46,7 +59,6 @@ if __name__ == '__main__':
         sigma={"widget_type": "Slider", "min": 1, "max": 10})
         #low_threshold={"widget_type": "Slider", "max": 100},
         #high_threshold={"widget_type": "Slider", "max": 100})
-    
         def update_seg_res(downsampling: int=4, min_diameter: int=30, sigma: int=3) -> List[napari.types.LayerDataTuple]: #, low_threshold: int=10, high_threshold: int=25
             orga_count.update_donwnsampling(downsampling)
             orga_count.update_min_organoid_size(min_diameter)
@@ -55,20 +67,23 @@ if __name__ == '__main__':
             #orga_count.update_high_threshold(high_threshold)
             segmentation = orga_count.apply_morphologies()
             _, _, bboxes = setup_bboxes(segmentation)
+            bboxes *= orga_count.get_current_downsampling() # reset to original resolution
             print('Number of organoids detected with automatic method: ', len(bboxes))
             print('Downsampling: ', downsampling, 'Minimum organoid diameter: ', min_diameter, ', Sigma: ', sigma) #', Low threshold: ', low_threshold, ', High threshold: ', high_threshold,
-            img = add_text_to_img(orga_count.img, len(bboxes), downsampling)
+            img = orga_count.img_orig_norm.copy()
+            img = add_text_to_img(img, len(bboxes)) #, downsampling)
             img_tuple = (img, {'name': 'Image'}, 'image')
             if len(bboxes) > 0:
-                if downsampling<3: edge_width=5
-                else: edge_width=3
+                #if downsampling<3: edge_width=5
+                #else: edge_width=3
+                edge_width=12
                 bbox_tuple = (bboxes, {'name': 'Organoids', 
                                         'face_color': 'transparent',
                                         'edge_color': 'magenta',
                                         'shape_type': 'rectangle',
                                         'edge_width': edge_width}, 'shapes')
             else:
-                bbox_tuple = ([],{'name': 'Organoids', 'face_color': 'transparent', 'edge_color': 'magenta', 'edge_width': 3}, 'shapes')
+                bbox_tuple = ([],{'name': 'Organoids', 'face_color': 'transparent', 'edge_color': 'magenta', 'edge_width': 12}, 'shapes')
             return [img_tuple, bbox_tuple]
  
         raw_filename = os.path.split(image_file)[-1]
@@ -78,26 +93,29 @@ if __name__ == '__main__':
         orga_count = OrgaCount(input_dir, image_file, args.downsample, args.min_diameter, args.sigma, args.low_threshold, args.high_threshold)
         
         viewer = napari.Viewer()
-        img = orga_count.img
+        img = orga_count.img_orig_norm.copy()
         if args.auto_count==True: 
             segmentation = orga_count.apply_morphologies()
-            bbox_properties, text_parameters, bboxes = setup_bboxes(segmentation)#, median_cell_size)
+            _, _, bboxes = setup_bboxes(segmentation)#, median_cell_size)
+            bboxes *= orga_count.get_current_downsampling()
             print('Number of organoids detected with automatic method: ', len(bboxes))
-            img = add_text_to_img(img, len(bboxes), orga_count.downsampling_size)
+            img = add_text_to_img(img, len(bboxes)) #, orga_count.downsampling_size)
             img_layer = viewer.add_image(img, name='Image', colormap='gray')
             shapes_layer = viewer.add_shapes(bboxes, 
                                             name='Organoids',
                                             face_color='transparent',  
                                             edge_color='magenta',
                                             shape_type='rectangle',
-                                            edge_width=3)
-        else:
-            img_layer = viewer.add_image(img, name='Image', colormap='gray')    
-            shapes_layer = viewer.add_shapes(name='Organoids', face_color='transparent', edge_color='magenta', edge_width=3)
-        if args.auto_count==True: 
+                                            edge_width=12)
             viewer.window.add_dock_widget(update_seg_res)
             # update the layer dropdown menu when the layer list changes
             viewer.layers.events.changed.connect(update_seg_res.reset_choices)
+        else:
+            img_layer = viewer.add_image(img, name='Image', colormap='gray')    
+            shapes_layer = viewer.add_shapes(name='Organoids', face_color='transparent', edge_color='magenta', edge_width=12)
+        # update the text displaying the number of organoids
+        viewer.window.add_dock_widget(update_display_text)
+        viewer.layers.events.changed.connect(update_display_text.reset_choices)
 
         @viewer.bind_key('s')
         def store_centroids(viewer):
@@ -112,7 +130,7 @@ if __name__ == '__main__':
                 d2 = abs(bbox[0][1] - bbox[2][1])
                 d1, d2, area = orga_count.compute_real_values(d1,d2)
                 data_csv.append([i, round(d1,3), round(d2,3), round(area,3)])
-                bbox *= orga_count.get_current_downsampling()
+                #bbox *= orga_count.get_current_downsampling()
                 data_json.update({str(i): [list(bboxit) for bboxit in bbox]})
             #write to csv
             df = pd.DataFrame(data_csv, columns =['OrganoidID', 'D1[um]','D2[um]', 'Area [um^2]']) 
