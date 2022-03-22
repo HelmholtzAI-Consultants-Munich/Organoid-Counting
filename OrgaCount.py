@@ -6,7 +6,7 @@ from scipy import ndimage as ndi
 from skimage.measure import block_reduce
 from skimage.feature import canny
 from skimage.measure import regionprops,label
-from skimage.morphology import remove_small_objects,erosion
+from skimage.morphology import remove_small_objects, erosion, disk
 import cv2
 
 def add_text_to_img(img, organoid_number, downsampling=1):
@@ -113,15 +113,15 @@ class OrgaCount():
             The directory in which image we wish to segment is stored
         img_path : str
             The name of the image we wish to segment. The image must be in czi format
-        downsampling_size : int, default=4
+        downsampling_size : int
             The downsamplign applied to the image as a pre-processign step
-        min_diameter_um : int, default=30
+        min_diameter_um : int
             The minimum diameter of the organoids in um defined by the user (organoids are approximated as circles)
-        sigma : int, default=3
+        sigma : int
             The sigma used in the Canny Edge Detection algorithm
-        low_threshold : int, default=10
+        low_threshold : int
             The low hysteresis threshold used in the Canny Edge Detection algorithm
-        high_threshold : int, default=25  
+        high_threshold : int 
             The high hysteresis threshold used in the Canny Edge Detection algorithm 
     Attributes
     -------
@@ -153,11 +153,12 @@ class OrgaCount():
     def __init__(self, 
                 root_path,
                 img_path, 
-                downsampling_size=4, 
-                min_diameter_um=30, 
-                sigma=3, 
-                low_threshold=10, 
-                high_threshold=25):
+                downsampling_size, 
+                min_diameter_um, 
+                sigma, 
+                low_threshold, 
+                high_threshold,
+                background_intensity):
         img_czi = AICSImage(os.path.join(root_path, img_path))
         self.img_resX_orig = img_czi.physical_pixel_sizes.X # in micrometers
         self.img_resY_orig = img_czi.physical_pixel_sizes.Y
@@ -169,7 +170,7 @@ class OrgaCount():
         self.sigma = sigma
         self.low_threshold = low_threshold
         self.high_threshold = high_threshold
-        self.background_intensity = 40
+        self.background_intensity = background_intensity
         self.min_radius_um = min_diameter_um//2 #15 # min diameter defined by collaborators as d=30 micrometers. Min area A=pi*r^2
 
     def _update_resolutions(self):
@@ -260,8 +261,7 @@ class OrgaCount():
         edges = ndi.binary_dilation(edges)
         # fill holes
         filled = ndi.binary_fill_holes(edges)
-        filled = erosion(filled)
-        filled = erosion(filled)
+        filled = erosion(filled, disk(2))
         labels = label(filled)
         region = regionprops(labels)
         # remove objects larger than 30% of the image

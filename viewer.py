@@ -9,7 +9,7 @@ from magicgui import magicgui
 from napari.types import ShapesData, ImageData
 from typing import List
 import numpy as np
-import pandas as pd
+import csv
 from OrgaCount import *
 
 def get_args():
@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument('--sigma', default=3, type=int)
     parser.add_argument('--low-threshold', default=10, type=int)
     parser.add_argument('--high-threshold', default=25, type=int)
+    parser.add_argument('--background-intensity', default=40, type=int)
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -62,7 +63,7 @@ if __name__ == '__main__':
         # low and high threshold removed for now as not helpful for user
         #low_threshold={"widget_type": "Slider", "max": 100},
         #high_threshold={"widget_type": "Slider", "max": 100})
-        def update_seg_res(downsampling: int=4, min_diameter: int=30, sigma: int=3) -> List[napari.types.LayerDataTuple]: #, low_threshold: int=10, high_threshold: int=25
+        def update_seg_res(downsampling: int=args.downsample, min_diameter: int=args.min_diameter, sigma: int=args.sigma) -> List[napari.types.LayerDataTuple]: #, low_threshold: int=args.low_threshold, high_threshold: int=args.high_threshold
             # update all parameters in OrgaCount instance
             orga_count.update_donwnsampling(downsampling)
             orga_count.update_min_organoid_size(min_diameter)
@@ -98,7 +99,7 @@ if __name__ == '__main__':
         output_path_csv = os.path.join(args.output, raw_filename+'.csv')
 
         # initialise OrgaCount instance with current image
-        orga_count = OrgaCount(input_dir, image_file, args.downsample, args.min_diameter, args.sigma, args.low_threshold, args.high_threshold)
+        orga_count = OrgaCount(input_dir, image_file, args.downsample, args.min_diameter, args.sigma, args.low_threshold, args.high_threshold, args.background_intensity)
         
         # initialise napari viewer
         viewer = napari.Viewer()
@@ -148,12 +149,14 @@ if __name__ == '__main__':
                 data_csv.append([i, round(d1,3), round(d2,3), round(area,3)])
                 data_json.update({str(i): [list(bboxit) for bboxit in bbox]})
             #write diameters and area to csv
-            df = pd.DataFrame(data_csv, columns =['OrganoidID', 'D1[um]','D2[um]', 'Area [um^2]']) 
-            df.to_csv(output_path_csv, index=False)
+            with open(output_path_csv, 'w') as f:
+                write = csv.writer(f, delimiter=';')
+                write.writerow(['OrganoidID', 'D1[um]','D2[um]', 'Area [um^2]'])
+                write.writerows(data_csv)
+                viewer.close()
             #write bbox coordinates to json
             with open(output_path_json, 'w') as outfile:
-                json.dump(data_json, outfile)        
-            viewer.close()
+                json.dump(data_json, outfile)   
         
         napari.run()
     
