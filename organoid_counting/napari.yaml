@@ -1,0 +1,10 @@
+name: organoid-counting
+contributions:
+  commands:
+    - id: organoid-counting.count_organoids
+      title: Count and quantify organoids!
+      python_name: organoid_counting:have_button
+  widgets:
+    - command: organoid-counting.count_organoids  # note, same as command.id above
+      display_name: Organoid Counting
+      autogenerate: true
